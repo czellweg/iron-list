@@ -1563,8 +1563,10 @@ will only render 20.
     toggleSelectionForItem: function(item) {
       item = this._getNormalizedItem(item);
       if (/** @type {!ArraySelectorElement} */ (this.$.selector).isSelected(item)) {
+        this._lastSelectedIndex = -1;
         this.deselectItem(item);
       } else {
+        this._lastSelectedIndex = this.items.indexOf(item);
         this.selectItem(item);
       }
     },
@@ -1633,38 +1635,20 @@ will only render 20.
       var sourceEvent = e && e.detail && e.detail.sourceEvent;
       
       // Handle `shift` click scenario
+      var item = model[this.as];
       if (this.multiSelection && this.selectedItems.length && sourceEvent.shiftKey) {
-        this._shiftSelectHandler(model[this.as]);
+        this._shiftSelectHandler(item);
       } else {
-        this.toggleSelectionForItem(model[this.as]);
+        this.toggleSelectionForItem(item);
       }
     },
 
     _shiftSelectHandler: function(selectedItem) {
       var selectedIndex = this.items.indexOf(selectedItem);
-      var _selectedItemIndexes = this.selectedItems.map(function(item) {
-        return this.items.indexOf(item);
-      }.bind(this));
-
-      var firstSelectedIndex = _selectedItemIndexes.reduce(function(currentIndex, itemIndex) {
-        return Math.min(currentIndex, itemIndex);
-      });
-
-      var lastSelectedIndex = _selectedItemIndexes.reduce(function(currentIndex, itemIndex) {
-        return Math.max(currentIndex, itemIndex);
-      });
-      
-      var startIndex = Math.min(selectedIndex, firstSelectedIndex);
-      var lastIndex = Math.max(selectedIndex, lastSelectedIndex);
-
+      var startIndex = Math.min(selectedIndex, this._lastSelectedIndex);
+      var lastIndex = Math.max(selectedIndex, this._lastSelectedIndex);
       // Select the range created with the shift select
       this._selectRange(startIndex, lastIndex);
-
-      // Deselect everything outside of the shift select range (will only occur
-      // if a user shift selects in the middle of a range)
-      if (selectedIndex > firstSelectedIndex && selectedIndex < lastSelectedIndex) {
-        this._deselectRange(selectedIndex + 1, lastSelectedIndex);
-      }
     },
 
     /**

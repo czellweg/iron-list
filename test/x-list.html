@@ -10,6 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
 <link rel="import" href="../iron-list.html">
 
 <dom-module id="x-list">
@@ -24,8 +25,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       .item {
         color: white;
+        height: 30px;
       }
-
+      
       .item:nth-child(odd) {
         background-color: green;
       }
@@ -34,19 +36,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         background-color: red;
       }
 
-      iron-list {
-        background-color: black;
+      .item.selected {
+        background-color: blue;
       }
+
+      /*iron-list {
+        background-color: black;
+      }*/
+      
     </style>
 
-    <iron-list style$="[[_computedListHeight(listHeight)]]" items="[[data]]" as="item" id="list">
-      <template>
-        <div class="item" tabindex$="[[_computedTabIndex(tabIndex, useTabIndex)]]">
-          <div style$="[[_computedItemHeight(item)]]" tabindex="0" hidden$="[[primitive]]">[[item.index]]</div>
-          <div style$="[[_computedItemHeight(item)]]" tabindex="0" hidden$="[[!primitive]]">[[item]]</div>
-        </div>
-      </template>
-    </iron-list>
+    <iron-scroll-threshold id="threshold">
+      <iron-list style$="[[_computedListHeight(listHeight)]]" items="[[data]]" as="item" id="list" scroll-target="threshold" selection-enabled multi-selection>
+        <template>
+          <div class$="[[_computedClass(selected)]]" tabindex$="[[_computedTabIndex(tabIndex, useTabIndex)]]">
+            <div style$="[[_computedItemHeight(item)]]" tabindex="0" hidden$="[[primitive]]">[[item.index]]</div>
+            <div style$="[[_computedItemHeight(item)]]" tabindex="0" hidden$="[[!primitive]]">[[item]]</div>
+          </div>
+        </template>
+      </iron-list>
+    </iron-scroll-threshold>
   </template>
 
 </dom-module>
@@ -97,6 +106,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         css += 'height: ' + (this.itemHeight) + 'px;';
       }
       return css;
+    },
+
+    /**
+     * Adds the `selected` class in case the list element has been selected.
+     * @param  {Boolean} isSelected true or false
+     */
+    _computedClass: function(isSelected) {
+      var classes = "item";
+      if (isSelected) {
+        classes += " selected";
+      }
+      return classes;
     },
 
     _computedListHeight: function(listHeight) {
